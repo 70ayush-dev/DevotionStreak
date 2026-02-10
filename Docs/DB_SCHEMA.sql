@@ -8,6 +8,7 @@ create table if not exists profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   display_name text not null default '',
   opt_in_global boolean not null default true,
+  onboarding_11x11_prompt_dismissed_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

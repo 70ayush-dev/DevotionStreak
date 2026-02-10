@@ -8,14 +8,19 @@ import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
 import StreakPill from "@/components/StreakPill";
 import DuoStreakCard from "@/components/DuoStreakCard";
 import Toast from "@/components/Toast";
+import BottomSheet from "@/components/BottomSheet";
 import { getHomeState, incrementToday, undoToday } from "@/lib/challenge";
 import { getMyProfile, upsertMyLeaderboardSnapshots } from "@/lib/leaderboard";
+import { dismiss11x11HomePrompt, getMyProfileMinimal, start11x11Challenge } from "@/lib/db";
 
 export default function HomePage() {
   const [state, setState] = useState<Awaited<ReturnType<typeof getHomeState>> | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [burst, setBurst] = useState(false);
   const [reduceMotion, setReduceMotion] = useState<boolean | null>(null);
+  const [promptOpen, setPromptOpen] = useState(false);
+  const [promptChecked, setPromptChecked] = useState(false);
+  const [promptBusy, setPromptBusy] = useState(false);
 
   const refresh = async () => setState(await getHomeState());
 
@@ -30,6 +35,23 @@ export default function HomePage() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (!state) return;
+    if (promptChecked) return;
+    setPromptChecked(true);
+
+    (async () => {
+      try {
+        if (state.challenge11x11) return;
+        const profile = await getMyProfileMinimal();
+        const dismissedAt = (profile as { onboarding_11x11_prompt_dismissed_at?: string | null } | null)?.onboarding_11x11_prompt_dismissed_at ?? null;
+        if (!dismissedAt) setPromptOpen(true);
+      } catch {
+        // ignore
+      }
+    })();
+  }, [state, promptChecked]);
 
   const vibrate = () => {
     try {
@@ -115,6 +137,61 @@ export default function HomePage() {
 
   return (
     <main>
+      <BottomSheet
+        open={promptOpen}
+        title="Try the 11×11 Challenge"
+        onClose={async () => {
+          setPromptOpen(false);
+          try {
+            await dismiss11x11HomePrompt();
+          } catch {
+            // ignore
+          }
+        }}
+      >
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-[color:var(--line)] bg-white/70 px-4 py-4">
+            <div className="text-sm font-semibold">A focused 11 days</div>
+            <div className="mt-2 text-sm text-[color:var(--muted)]">
+              Daily streak keeps running. The challenge just adds a goal: <span className="font-semibold text-[color:var(--text)]">11 recitations/day</span> for{" "}
+              <span className="font-semibold text-[color:var(--text)]">11 days</span>.
+            </div>
+          </div>
+          <div className="flex flex-col gap-3">
+            <PrimaryButton
+              disabled={promptBusy}
+              onClick={async () => {
+                setPromptBusy(true);
+                try {
+                  await start11x11Challenge();
+                  setPromptOpen(false);
+                  await refresh();
+                  setToast("11×11 started");
+                } finally {
+                  setPromptBusy(false);
+                }
+              }}
+            >
+              {promptBusy ? "Starting…" : "Start 11×11 now"}
+            </PrimaryButton>
+            <SecondaryButton
+              disabled={promptBusy}
+              onClick={async () => {
+                setPromptBusy(true);
+                try {
+                  await dismiss11x11HomePrompt();
+                  setPromptOpen(false);
+                } finally {
+                  setPromptBusy(false);
+                }
+              }}
+            >
+              Not now
+            </SecondaryButton>
+          </div>
+        </div>
+      </BottomSheet>
+
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-sm text-[color:var(--muted)]">Daily practice</div>
@@ -149,6 +226,23 @@ export default function HomePage() {
                 <div className="mt-1 text-xs text-[color:var(--muted)]">Challenge progress recorded.</div>
               </div>
             ) : null}
+          </Card>
+        </div>
+      ) : null}
+
+      {!state.challenge11x11 ? (
+        <div className="mt-5">
+          <Card className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-sm font-semibold truncate">11×11 Challenge</div>
+              <div className="mt-1 text-xs text-[color:var(--muted)]">Start anytime. Daily streak continues.</div>
+            </div>
+            <SecondaryButton
+              onClick={() => setPromptOpen(true)}
+              className="shrink-0 w-auto h-11 px-4 text-sm"
+            >
+              Start
+            </SecondaryButton>
           </Card>
         </div>
       ) : null}

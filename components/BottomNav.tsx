@@ -38,7 +38,7 @@ export default function BottomNav() {
   }, [router, pathname]);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 mx-auto max-w-md px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
+    <nav className="fixed bottom-0 left-0 right-0 z-20 mx-auto max-w-md px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
       <div className="rounded-2xl border border-[color:var(--line)] bg-white/80 p-2 shadow-soft backdrop-blur">
         <div className="grid grid-cols-5">
           {tabs.map((t) => (

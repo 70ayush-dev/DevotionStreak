@@ -132,7 +132,7 @@ export async function fetchDailyLeaderboard(limit = 50) {
     .order("longest_streak", { ascending: false })
     .order("updated_at", { ascending: false })
     .limit(limit);
-  if (error) throw rpcErr;
+  if (error) throw error;
   return data ?? [];
 }
 

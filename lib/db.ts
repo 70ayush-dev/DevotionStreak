@@ -43,11 +43,42 @@ export async function getMyProfileMinimal() {
 
   const { data: row, error } = await supabase
     .from("profiles")
+    .select("display_name,opt_in_global,created_at,onboarding_11x11_prompt_dismissed_at")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!error) return row;
+
+  // Backward-compatible: if the onboarding column doesn't exist yet in DB, retry without it.
+  // PostgREST uses 42703 for undefined_column.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const code = (error as any)?.code as string | undefined;
+  if (code !== "42703") throw error;
+
+  const { data: row2, error: error2 } = await supabase
+    .from("profiles")
     .select("display_name,opt_in_global,created_at")
     .eq("user_id", userId)
     .maybeSingle();
-  if (error) throw error;
-  return row;
+  if (error2) throw error2;
+  return row2;
+}
+
+export async function dismiss11x11HomePrompt() {
+  const supabase = getBrowserSupabase();
+  const { data } = await supabase.auth.getUser();
+  const userId = requireUserId(data.user);
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ onboarding_11x11_prompt_dismissed_at: new Date().toISOString() })
+    .eq("user_id", userId);
+  if (!error) return;
+
+  // If the column doesn't exist yet, treat dismiss as a no-op.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const code = (error as any)?.code as string | undefined;
+  if (code === "42703") return;
+  throw error;
 }
 
 export async function getDailyLog(dateKey: string) {
@@ -181,4 +212,3 @@ export async function upsertChallengeDayLog(opts: {
   const { error } = await supabase.from("daily_logs").upsert(payload, { onConflict: "challenge_id,log_date" });
   if (error) throw error;
 }
-

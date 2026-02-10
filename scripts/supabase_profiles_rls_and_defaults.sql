@@ -15,6 +15,10 @@ create policy profiles_update_own on public.profiles for update using (auth.uid(
 -- Default opt-in ON
 alter table public.profiles alter column opt_in_global set default true;
 
+-- Persist dismissing the 11×11 start prompt on Home (optional).
+alter table public.profiles
+  add column if not exists onboarding_11x11_prompt_dismissed_at timestamptz;
+
 -- Auto-create profile on signup using Google name (or email prefix fallback)
 create or replace function public.handle_new_user()
 returns trigger
@@ -43,4 +47,3 @@ $$;
 
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users for each row execute procedure public.handle_new_user();
-
