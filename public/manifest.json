@@ -1,0 +1,19 @@
+{
+  "name": "11×11 Challenge",
+  "short_name": "11×11",
+  "description": "11 Hanuman Chalisa recitations per day for 11 consecutive days.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff8ef",
+  "theme_color": "#8a1f1a",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

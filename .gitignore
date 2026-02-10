@@ -1,0 +1,21 @@
+node_modules
+.next
+out
+dist
+.vercel
+
+.DS_Store
+*.log
+
+.tsbuildinfo
+*.tsbuildinfo
+
+.env
+.env.local
+.env.*.local
+
+# Local secrets scratchpad
+cred.txt
+
+# DDEV local overrides (secrets)
+.ddev/config.local.yaml

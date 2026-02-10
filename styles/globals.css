@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #fff8ef;
+  --card: rgba(255, 255, 255, 0.85);
+  --text: #24120b;
+  --muted: rgba(36, 18, 11, 0.7);
+  --line: rgba(36, 18, 11, 0.12);
+  --accent: #8a1f1a;
+  --accent-2: #d47b12;
+  --ok: #1b7c46;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(900px 600px at 10% -10%, rgba(212, 123, 18, 0.16), transparent 60%),
+    radial-gradient(900px 600px at 90% 0%, rgba(138, 31, 26, 0.12), transparent 55%),
+    var(--bg);
+  color: var(--text);
+  /* Platform-respectful system stack */
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    "Apple Color Emoji",
+    "Segoe UI Emoji";
+}
+
+/* Ensure tap targets and avoid 300ms delay quirks. */
+button,
+a {
+  touch-action: manipulation;
+}
+
+.safe-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 84px);
+}
+
+.sheet-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
